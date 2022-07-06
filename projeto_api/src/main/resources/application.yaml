@@ -1,0 +1,96 @@
+# configurações do servidor
+server:
+  servlet:
+    context-path: /
+  port: 8080
+  tomcat:
+    connection-timeout: 10000
+pdpj:
+  appName: ${APP_NAME:snbacadastrobens}
+  nomeServico: SNBA
+  descricao: Sistema Nacional de Bens Apreendidos
+  iconePequenoUrl: /assets/images/icone_pequeno.jpeg
+  iconeGrandeUrl: /assets/images/icone_grande.jpeg
+  swaggerUrl: https://gateway.stg.cloud.pje.jus.br/snbacadastrobens/swagger-ui.html
+  frontendUrl: http://localhost:4200  # opcional
+  documentacaoUsuarioUrl: https://gateway.stg.cloud.pje.jus.br/snbacadastrobens/swagger-ui.html
+  documentacaoTecnicaUrl: https://gateway.stg.cloud.pje.jus.br/snbacadastrobens/swagger-ui.html
+## configurações do serviço
+spring:
+  application:
+    name: snbacadastrobens
+  aop:
+    auto: false
+  profiles:
+    active: sso-security
+  jackson:
+    time-zone: Brazil/East
+    locale: pt-BR
+    serialization:
+      write-dates-as-timestamps: true
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/pdpj_snbacadastrobens}
+    username: ${DB_USER:pdpj_snbacadastrobens}
+    password: ${DB_PASSWORD:C9H3rOrQldHoAx3x}
+  jpa:
+    generate-ddl: false
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQL9Dialect
+        format_sql: true
+        default_schema: snba
+      org:
+        hibernate:
+          envers:
+            default_schema: snba
+  cache:
+    type: redis
+  redis:
+    host: ${REDIS_HOST:redis.comum-homologacao}
+    port: ${REDIS_PORT:6379}
+  flyway:
+    url: ${FLYWAY_URL:jdbc:postgresql://localhost:5432/pdpj_snbacadastrobens}
+    username: ${FLYWAY_USER:pdpj_snbacadastrobens}
+    password: ${FLYWAY_PASSWORD:C9H3rOrQldHoAx3x}
+    schemas: snba
+    enabled: true
+# configurações do cliente para keycloak
+keycloak:
+  auth-server-url: ${KEYCLOAK_AUTH_SERVER_URL:https://sso.stg.cloud.pje.jus.br/auth}
+  realm: ${KEYCLOAK_REALM:pje}
+  resource: ${KEYCLOAK_RESOURCE:snba}
+  bearer-only: true
+  principal-attribute: preferred_username
+  cors: true
+  ssl-required: none
+  credentials:
+    secret: ${KEYCLOAK_CREDENTIALS_SECRET:665a2648-47ad-40d1-bc87-3ba2ad0aef2e}
+# configurações da instancia no service discovery
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${EUREKA_SERVER_DEFAULT_ZONE:https://discovery.stg.cloud.pje.jus.br/eureka}
+    enabled: ${EUREKA_REGISTER_ENABLE:false}
+  instance:
+    healthCheckUrlPath: /actuator/health
+    statusPageUrlPath: /actuator/info
+    homePageUrl: https://snbacadastrobens.stg.pdpj.jus.br # <- url-base na marketplace
+    metadataMap:
+      pdpj: false # <- para ativar na marketplace
+# configurações do actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: ALWAYS
+# opções de log
+logging:
+  level:
+    br.jus.pdpj: DEBUG
+# opções de auditoria de endpoint
+auditoria:
+  naoLogar: actuator,swagger-ui.html,configuration,webjars,v2/api-docs,swagger-resources,api/v1/publico
